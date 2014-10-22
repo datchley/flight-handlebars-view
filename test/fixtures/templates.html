@@ -1,0 +1,24 @@
+<!-- standard template -->
+<script type="text/x-template-handlebars" id="test">
+    <div class="message">
+        <p>Hello <b>{{name}}</b>!</p>
+        <p>{{greeting}}</p>
+    </div>
+</script>
+
+<!-- standard template that includes a partial -->
+<script type="text/x-template-handlebars" id="item-list">
+    <p>Some Items</p>
+    <ul class="items">
+    {{#each items}}
+        {{> item}}
+    {{/each}}
+    </ul>
+</script>
+
+<!-- partial template -->
+<script type="text/x-template-handlebars" id="item">
+        <li class="item">{{description}} - {{price}}</li>
+</script>
+
+<div id="scratch"></div>
