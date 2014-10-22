@@ -4,7 +4,14 @@
   "authors": [
     "David Atchley <david.atchley@answers.com>"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/datchley/flight-handlebars-view.git"
+  },
   "description": "A Flight mixin for using Handlebars templates with a component",
+  "keywords": [
+    "flight", "mixin", "handlebars"
+  ],
   "license": "MIT",
   "private": true,
   "ignore": [
