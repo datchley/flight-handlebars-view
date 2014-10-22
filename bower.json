@@ -4,6 +4,7 @@
   "authors": [
     "David Atchley <david.atchley@answers.com>"
   ],
+  "main": "src/with_handlebars_view.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/datchley/flight-handlebars-view.git"
@@ -13,7 +14,7 @@
     "flight", "mixin", "handlebars"
   ],
   "license": "MIT",
-  "private": true,
+  "private": false,
   "ignore": [
     "**/.*",
     "node_modules",

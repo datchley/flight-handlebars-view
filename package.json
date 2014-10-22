@@ -2,7 +2,7 @@
   "name": "flight-handlebars-view",
   "version": "0.1.0",
   "description": "Flight.js mixin for using handlebars.js templates with a component",
-  "main": "index.js",
+  "main": "src/with_handlebars_view.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
