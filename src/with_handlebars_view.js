@@ -1,3 +1,4 @@
+/* global Handlebars */
 (function(root, factory) {
     'use strict';
 
@@ -10,7 +11,7 @@
         module.exports = factory(Handlebars);
     }
     else {
-        root.returnExports = factory(Handlebars);
+        root.withHandlebarsView = factory(Handlebars);
     }
 }(this, function(Handlebars) {
     'use strict';
@@ -22,13 +23,14 @@
         };
 
     function withHandlebarsView() {
-        // this.defaultAttrs({
+        // Template attribute options
         //     templates: {
         //         'test': '#test'  - A selector id referencing a <script id="test" type="text/x-template-handlebars"></script>
         //         'test2': 'test2' - name of a precompiled template that was loaded
         //         'test3': '<p>{{greeting}}, {{name}}</p>' - an inline, string html template
         //     }
         // });
+        this.attributes.templates = null;
 
         // cache template functions after compiling/first-use
         this.__templates__ = {};
