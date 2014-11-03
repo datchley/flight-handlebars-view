@@ -29,14 +29,16 @@ This mixin can be used with Flight.js via [Require.js](http://requirejs.org/) or
 
 You only need to include/require Handlebars.js library (_full or just the runtime if using only pre-compiled templates_) for this mixin to work.
 
-## Simple Example Usage
+## API
 
-Use the `with_handlebars_view` mixin.  The mixin provides any Component with a `render()` method.
+### `Render()`
+Use the `with_handlebars_view` mixin.  The mixin provides any Component with a `render()` method.  Then render method has the following signature:
 
 + {string} _html_ = this->**render(**{string} _name_, {object} _context_**)**
 
 Where:
-+ **{string} _name_** - the property in `this.attr.templates` that references the specific template. A template can be referenced as any of the following:
+
++  **{string} _name_** - the property in `this.attr.templates` that references the specific template. A template can be referenced as any of the following:
     1. an inline, string template
     2. an '#' id selector referencing a template in a `<script>` tag
     3. the name of a pre-compiled template function
@@ -44,8 +46,41 @@ Where:
     any template may contain partials, and even inline string templates can be partials as long as their property name is referenced as the partial (_see example below_).
 + **{object} _context_** - an object containing the context data to be used to render the template.
 
-The following gives an example shows each of the above use-cases within one UI Component.
+### Attributes: `templates`
+The `render()` method also expects that each components defines the templates it uses in its default attributes via a property named `templates` which is an object.  This objects allows you to setup templates as named properties of that attribute `this.attr.templates` which you pass in as the first argument to `render()`.
 
+```javascript
+this.defaultAttrs({
+ templates: {  }
+});
+```
+
+You can define templates that refer to external templates (*via `<script>` tags*), plain string/HTML templates and pre-compiled templates. For the first two, you can also pass in compile options for each template as well, which is the same object/options accepted by `Handlebars.compile()`.
+
+**external `<script>` templates**
+```javascript
+templates: {
+	'hello':  '#hello',   // references <script id="hello" ...>
+	'users': [ '#user-list',  { noEscape:  true }]   // with Handlebars.compile options
+	}
+```
+**string/html templates**
+```javascript
+templates: {
+	'hello':  '<h1>{{greeting}}</h1>',   // inline template
+	'user': [ '<li>{{name}} - {{age}}</li>',  { noEscape:  true }]
+	}
+```
+**pre-compiled templates**
+You can load your pre-compiled templates however you like, just use the actual template name as the value for the template property you setup.  Pre-compiled templates can be setup as an array passing in compile options, as they're already compiled on the server side.
+```javascript
+templates: {
+	'hello':  'hello',   // references Handlebars.templates.hello
+	}
+```
+
+## Simple Example Usage
+The following gives an example shows each of the above use-cases within one UI Component.
 
 Example using Flight standalone:
 ```html
