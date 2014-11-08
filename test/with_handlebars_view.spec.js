@@ -1,29 +1,43 @@
-/* global jasmine, spyOnEvent, loadFixtures */
+/* global jasmine, spyOnEvent, loadFixtures, afterEach, beforeEach */
 
 // load our compiled templates via define() deps
-define(['hbs/compiled'], function(compiled) {
+define(['hbs/compiled', 'flight/lib/component', 'flight/lib/registry', 'src/with_handlebars_view'], function(compiled, defineComponent, registry, mixin) {
     'use strict';
 
-    describeMixin('src/with_handlebars_view', function() {
+    var Component = (function() {
 
-        // load templates fixture
-        jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
-
-        beforeEach(function() {
-            // Setup our test template references as defaults
-            this.setupComponent({
-                'templates': {
+        // Test Component using mixin
+        function TestComponent() {
+            this.after('initialize', function() {
+                this.templates({
                     'test': '#test',
                     'item-list': '#item-list',
                     'compiled': 'compiled',
                     'item': '#item'
-                }
+                });
             });
+        }
+        return defineComponent(TestComponent, mixin);
+    })();
+
+    // load templates fixture
+    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
+
+    describe("withHandlebarsView Mixin", function() {
+
+        beforeEach(function() {
             loadFixtures('templates.html');
+            this.component = (new Component).initialize($('#scratch'));
+        });
+
+        afterEach(function() {
+            // this.component.teardown();
+            Component.teardownAll();
         });
 
         it('should be defined', function() {
             expect(this.component).toBeDefined();
+            expect(this.component.templates).toBeDefined();
         });
 
         it('via attributes from selector', function() {
@@ -32,6 +46,7 @@ define(['hbs/compiled'], function(compiled) {
                 'name': 'Dave',
                 'greeting': 'Welcome to Flight'
             });
+            console.log("[debug] html=" + html);
             $('#scratch').append(html);
             expect($('#scratch')).toContainElement('div.message');
         });

@@ -27,29 +27,48 @@
         };
 
     function withHandlebarsView() {
-        // Default attribute examples:
-        //     templates: {
+        // Defining templates in a component (via after('initialize'))
+        //     this.templates({
         //         'test': ['#test', { noEscape: true }],  - A selector id referencing a <script id="test" type="text/x-template-handlebars"></script>
         //         'test2': 'test2', - name of a precompiled template that was loaded
         //         'test3': '<p>{{greeting}}, {{name}}</p>' - an inline, string html template
-        //     }
+        //     });
         // 
+        this.templates = function(cfg) {
+            this._templates = cfg || {};
+            return this;
+        };
 
-        // cache template functions after compiling/first-use
-        this.attributes.templates = null;
+        this.templateHelpers = function(cfg) {
+            for (var key in cfg) {
+                var fn = cfg[key],
+                    helper = key;
+                
+                fn = (typeof fn === 'string') ? this[fn] : fn;
 
-        // cache template functions after compiling/first-use
-        this.__templates__ = {};
+                if (fn) {
+                    Handlebars.registerHelper(helper, cfg[helper].bind(this));
+                }
+            }
+        };
 
-        this.render = function(name, data) {
+        // cache template functions after compiling/first-use at the Component.prototype level
+        // meaning this cache is shared across all instances of the same component on a page
+        this.__templates_cache__ = {};
+
+        this.render = function (name, data) {
+            if (!this._templates) {
+                throw new Error('error: [' + this + '] render() called but no templates defined');
+            }
+
             var context = data || {},
-                template = this.attr.templates[name] || name;
+                template = this._templates[name] || name;
 
             // add to cache if we haven't already
-            if (!this.__templates__[name]) {
+            if (!this.__templates_cache__[name]) {
                 if (isPrecompiled(template)) {
                     // pre-compiled, so just cache the template function
-                    this.__templates__[name] = Handlebars.templates[template];
+                    this.__templates_cache__[name] = Handlebars.templates[template];
                 }
                 else {
                     var markup,
@@ -68,7 +87,7 @@
                         // a template via <script> tag and #id
                         markup = $(template).html();
                         if (!markup) {
-                            throw new Error("error: Handlebars: template with id '#" + template + "' is not defined");
+                            throw new Error('error: Handlebars: template with id \'' + template + '\' is not defined');
                         }
                     }
                     else {
@@ -91,8 +110,8 @@
                                 pmarkup = $('#'+pname).html();
                             }
                             else {
-                                // grab it from attr.templates
-                                pmarkup = this.attr.templates[pname];
+                                // grab it from this._templates
+                                pmarkup = this._templates[pname];
                                 if (isArray(pmarkup)) {
                                     poptions = pmarkup[1];
                                     pmarkup = pmarkup[0];
@@ -102,11 +121,27 @@
                         }
                     }
                     // cache the compiled template function
-                    this.__templates__[name] = Handlebars.compile(markup, options);
+                    this.__templates_cache__[name] = Handlebars.compile(markup, options);
                 }
             }
             // return the rendered html using the passed context
-            return this.__templates__[name](context);
+            return this.__templates_cache__[name](context);
+        };
+
+        // utility method for prefixing template ids for <script> based templates defined
+        this.prefix_templates = function(prefix) {
+            for (var key in this._templates) {
+                if (isArray(this._templates[key])) {
+                    if (reId.test(this._templates[key][0])) {
+                        this._templates[key][0] = this._templates[key][0].replace(/^#(.*)/, '#'+prefix+'$1');
+                    }
+                }
+                else {
+                    if (reId.test(this._templates[key][0])) {
+                        this._templates[key] = this._templates[key].replace(/^#(.*)/, '#'+prefix+'$1');
+                    }
+                }
+            }
         };
     }
 
