@@ -1,6 +1,6 @@
 {
   "name": "flight-handlebars-view",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Flight.js mixin for using handlebars.js templates with a component",
   "main": "src/with_handlebars_view.js",
   "scripts": {
