@@ -27,18 +27,43 @@
         };
 
     function withHandlebarsView() {
-        // Defining templates in a component (via after('initialize'))
-        //     this.templates({
-        //         'test': ['#test', { noEscape: true }],  - A selector id referencing a <script id="test" type="text/x-template-handlebars"></script>
-        //         'test2': 'test2', - name of a precompiled template that was loaded
-        //         'test3': '<p>{{greeting}}, {{name}}</p>' - an inline, string html template
-        //     });
-        // 
+        /**
+         * Defining templates to use in a component. Example:
+         *
+         *     this.templates({
+         *         'test': ['#test', { noEscape: true }],  - A selector id referencing a <script id="test" type="text/x-template-handlebars"></script>
+         *         'test2': 'test2', - name of a precompiled template that was loaded
+         *         'test3': '<p>{{greeting}}, {{name}}</p>' - an inline, string html template
+         *     });
+         * 
+         */
         this.templates = function(cfg) {
             this._templates = cfg || {};
+            
+            // Each component caches it's own templates. We could cache across
+            // the same component based on a template #id; but not all template definitions
+            // passed in are via #ids on SCRIPT tags, some might be compiled template names
+            // or even straight HTML strings.
+            this.__templates_cache__ = {
+                // identify owner and creation of cache 
+                __owner__: 'id-' + this.identity + ':' + (new Date()).toISOString()
+            };
             return this;
         };
 
+        /**
+         * Define Handlebars template helper functions, passing in an
+         * object with the helper name as the property and the function 
+         * definition as the value for that property.
+         *
+         *  this.templateHelpers({
+         *      'json': function(obj) {
+         *          // return JSON formatted object
+         *          return new Handlebars.SafeString(JSON.stringify(obj));
+         *      }
+         *  });
+         *
+         */
         this.templateHelpers = function(cfg) {
             for (var key in cfg) {
                 var fn = cfg[key],
@@ -51,13 +76,36 @@
                 }
             }
         };
-
-        // cache template functions after compiling/first-use at the Component.prototype level
-        // meaning this cache is shared across all instances of the same component on a page
-        this.__templates_cache__ = {};
-
-        this.render = function (name, data) {
+        
+        /**
+         * Allow for components still using attributes() or defaultAttrs()
+         * to pull in templates
+         */
+        this.addCompatTemplates = function() {
             if (!this._templates) {
+                this._templates = {};
+            }
+            for (var prop in this.attr.templates) {
+                // don't over-write new style templates
+                if (!this._templates.hasOwnProperty(prop)) {
+                    this._templates[prop] = this.attr.templates[prop];
+                }
+            }
+            this._compat_done = true;
+        };
+        
+        /**
+         * Render the template via it's property `name' defined in the 
+         * templates({...}) call, using the given context `data'
+         */
+        this.render = function (name, data) {
+            if (!this._compat_done && this.attr && this.attr.templates) {
+                // pull in backward compat templates on first use if defined
+                this.addCompatTemplates();
+            }
+
+            if (!this._templates) {
+                // need to have some templates to render, dude.
                 throw new Error('error: [' + this + '] render() called but no templates defined');
             }
 
@@ -87,7 +135,7 @@
                         // a template via <script> tag and #id
                         markup = $(template).html();
                         if (!markup) {
-                            throw new Error('error: Handlebars: template with id \'' + template + '\' is not defined');
+                            throw new Error("error: Handlebars: template with id '#" + template + "' is not defined");
                         }
                     }
                     else {
@@ -128,21 +176,10 @@
             return this.__templates_cache__[name](context);
         };
 
-        // utility method for prefixing template ids for <script> based templates defined
-        this.prefix_templates = function(prefix) {
-            for (var key in this._templates) {
-                if (isArray(this._templates[key])) {
-                    if (reId.test(this._templates[key][0])) {
-                        this._templates[key][0] = this._templates[key][0].replace(/^#(.*)/, '#'+prefix+'$1');
-                    }
-                }
-                else {
-                    if (reId.test(this._templates[key][0])) {
-                        this._templates[key] = this._templates[key].replace(/^#(.*)/, '#'+prefix+'$1');
-                    }
-                }
-            }
-        };
+        this.before('initialize', function() {
+            // flag for pulling in backward compatible templates from prior versions
+            this._compat_done = false;
+        });
     }
 
     return withHandlebarsView;

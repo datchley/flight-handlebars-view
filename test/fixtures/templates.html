@@ -6,6 +6,19 @@
     </div>
 </script>
 
+<script type="text/x-template-handlebars" id="older-style">
+    <div class="message">
+        <p>Older Style for <b>{{name}}</b>!</p>
+        <p>{{greeting}}</p>
+    </div>
+</script>
+
+<script type="text/x-template-handlebars" id="helper-test">
+    <scr{{!}}ipt id="config">
+        var cfg = {{json data}};
+    </scr{{!}}ipt>
+</script>
+
 <!-- standard template that includes a partial -->
 <script type="text/x-template-handlebars" id="item-list">
     <p>Some Items</p>
