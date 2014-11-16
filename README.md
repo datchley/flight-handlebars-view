@@ -2,6 +2,8 @@
 
 A [Flight](https://github.com/flightjs/flight) mixin for Handlebars templating with Components.
 
+[![NPM](https://nodei.co/npm/flight-handlebars-view.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/flight-handlebars-view/)
+
 ## Installation
 
 With Bower:
