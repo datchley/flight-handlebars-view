@@ -150,7 +150,7 @@ Example using Flight standalone:
               items: []
             });
         
-            this.after('initialize', function() 
+            this.after('initialize', function() {
               this.templates({
                 // string literal, used as partial {{> item }}
                 item: '<li>{{description}} - $<b>{{price}}<\/b><\/li>',
